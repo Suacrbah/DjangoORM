@@ -12,8 +12,8 @@ from django.db.models.functions import ExtractYear, TruncDate
 from memory_profiler import profile
 
 from app.models import Products, Categories
-from app.models import OrderDetails as Orderdetails
 
+from app.models import OrderDetails as Orderdetails
 
 sys.dont_write_bytecode = True
 
@@ -166,6 +166,14 @@ def currentProductList():
 
 
 if __name__ == '__main__':
+    from datetime import datetime
+
+    func_list = [orderSubTotals, salesByYear, employeeSalesByCountry, listOfProducts, currentProductList]
+    for func in func_list:
+        start_time = datetime.now()
+        func()
+        execute_time = datetime.now() - start_time
+        print(func.__name__, "execute time: ", execute_time)
     # 1
     # orderSubTotals()
 

@@ -7,3 +7,170 @@ sql-3: explain SELECT `products`.`ProductID`, `products`.`ProductName`, `product
 sql-4: explain SELECT `products`.`ID`, `products`.`ProductName`, `categories`.`CategoryID`, `categories`.`CategoryName` FROM `products` INNER JOIN `categories` ON (`products`.`CategoryID` = `categories`.`ID`) WHERE `products`.`Discontinued` = 1 ORDER BY `products`.`ProductName` ASC
 
 sql-5: explain SELECT `products`.`ProductID`, `products`.`ProductName` FROM `products` WHERE `products`.`Discontinued` = 1 ORDER BY `products`.`ProductName` ASC
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    30     34.1 MiB     34.1 MiB           1   @profile
+    31                                         def orderSubTotals():
+    32                                             """
+    33                                                 select OrderID, format(sum(UnitPrice * Quantity * (1 - Discount)), 2) as Subtotal
+    34                                                 from orderdetails
+    35                                                 group by OrderID
+    36                                                 order by OrderID;
+    37                                                 """
+    38     34.2 MiB      0.0 MiB           1       subtotal_by_order = (
+    39     34.2 MiB      0.1 MiB           4           Orderdetails.objects
+    40     34.1 MiB      0.0 MiB           1           .values('OrderID')
+    41                                                 .annotate(
+    42     34.1 MiB      0.0 MiB           1               Subtotal=Sum(F('unitprice') * F('quantity') * (1 - F('discount')), output_field=models.FloatField())
+    43                                                 )
+    44     34.2 MiB      0.0 MiB           1           .order_by('OrderID')
+    45                                             )
+    46     36.6 MiB      2.5 MiB           1       print(subtotal_by_order.query)
+    47     37.0 MiB      0.4 MiB           1       print(subtotal_by_order)
+    48     37.0 MiB      0.0 MiB           1       return
+
+
+orderSubTotals execute time:  0:00:00.153559
+SELECT `orders`.`ShippedDate`, `orderdetails`.`ORDERID`, EXTRACT(YEAR FROM `orders`.`ShippedDate`) AS `year`, SUM(((`orderdetails`.`UnitPrice` * `orderdetails`.`Quantity`) * (1 - `orderdetails`.`Discount`))) AS `Subtotal` FROM `orderdetails` INNER JOIN `orders` ON (`orderdetails`.`ORDERID` = `orders`.`OrderID`) WHERE (`orders`.`ShippedDate` IS NOT NULL AND `orders`.`ShippedDate` BETWEEN 1996-12-24 00:00:00 AND 1997-09-30 00:00:00) GROUP BY `orderdetails`.`ID`, `orders`.`ShippedDate` ORDER BY DATE(`orders`.`ShippedDate`) ASC
+<QuerySet [{'OrderID_id__shippeddate': datetime.datetime(1996, 12, 24, 0, 0), 'OrderID_id__orderid': 10371, 'year': 1996, 'Subtotal': 72.95999972820282}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 24, 0, 0), 'OrderID_id__orderid': 10389, 'year': 1996, 'Subtotal': 396.8}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 24, 0, 0), 'OrderID_id__orderid': 10389, 'year': 1996, 'Subtotal': 288.0}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 24, 0, 0), 'OrderID_id__orderid': 10389, 'year': 1996, 'Subtotal': 788.0}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 24, 0, 0), 'OrderID_id__orderid': 10389, 'year': 1996, 'Subtotal': 360.0}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 25, 0, 0), 'OrderID_id__orderid': 10386, 'year': 1996, 'Subtotal': 54.0}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 25, 0, 0), 'OrderID_id__orderid': 10386, 'year': 1996, 'Subtotal': 112.0}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 26, 0, 0), 'OrderID_id__orderid': 10390, 'year': 1996, 'Subtotal': 539.9999991059303}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 26, 0, 0), 'OrderID_id__orderid': 10390, 'year': 1996, 'Subtotal': 518.3999991416931}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 26, 0, 0), 'OrderID_id__orderid': 10390, 'year': 1996, 'Subtotal': 432.0}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 26, 0, 0), 'OrderID_id__orderid': 10390, 'year': 1996, 'Subtotal': 600.4799990057945}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 27, 0, 0), 'OrderID_id__orderid': 10370, 'year': 1996, 'Subtotal': 183.59999871253967}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 27, 0, 0), 'OrderID_id__orderid': 10370, 'year': 1996, 'Subtotal': 798.0}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 27, 0, 0), 'OrderID_id__orderid': 10370, 'year': 1996, 'Subtotal': 135.99999904632568}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 30, 0, 0), 'OrderID_id__orderid': 10366, 'year': 1996, 'Subtotal': 84.0}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 30, 0, 0), 'OrderID_id__orderid': 10366, 'year': 1996, 'Subtotal': 52.0}, {'OrderID_id__shippeddate': datetime.datetime(1996, 12, 31, 0, 0), 'OrderID_id__orderid': 10391, 'year': 1996, 'Subtotal': 86.4}, {'OrderID_id__shippeddate': datetime.datetime(1997, 1, 1, 0, 0), 'OrderID_id__orderid': 10392, 'year': 1997, 'Subtotal': 1440.0}, {'OrderID_id__shippeddate': datetime.datetime(1997, 1, 2, 0, 0), 'OrderID_id__orderid': 10397, 'year': 1997, 'Subtotal': 648.7199954509736}, {'OrderID_id__shippeddate': datetime.datetime(1997, 1, 2, 0, 0), 'OrderID_id__orderid': 10397, 'year': 1997, 'Subtotal': 67.99999952316284}, '...(remaining elements truncated)...']>
+Filename: /Users/kaiyuan.gan/Desktop/Sem3 - Course/CS5421 - Database/project/Django-ORM/main.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    51     37.0 MiB     37.0 MiB           1   @profile
+    52                                         def salesByYear():
+    53                                             """
+    54                                             select distinct date(a.ShippedDate) as ShippedDate,
+    55                                                         a.OrderID,
+    56                                                         b.Subtotal,
+    57                                                         year(a.ShippedDate) as Year
+    58                                             from Orders a
+    59                                                      inner join
+    60                                                  (
+    61                                                      select distinct OrderID,
+    62                                                                      format(sum(UnitPrice * Quantity * (1 - Discount)), 2) as Subtotal
+    63                                                      from orderdetails
+    64                                                      group by OrderID) b on a.OrderID = b.OrderID
+    65                                             where a.ShippedDate is not null
+    66                                               and a.ShippedDate between date('1996-12-24') and date('1997-09-30')
+    67                                             order by a.ShippedDate;
+    68                                             :return:
+    69                                             """
+    70     37.0 MiB      0.0 MiB           7       orders = Orderdetails.objects.select_related('OrderID_id').filter(
+    71     37.0 MiB      0.0 MiB           1           OrderID_id__shippeddate__isnull=False,
+    72     37.0 MiB      0.0 MiB           1           OrderID_id__shippeddate__range=['1996-12-24', '1997-09-30']
+    73                                             ) \
+    74     37.0 MiB      0.0 MiB           1           .annotate(year=ExtractYear('OrderID_id__shippeddate')) \
+    75     37.0 MiB      0.0 MiB           1           .annotate(ShippedDate=TruncDate('OrderID_id__shippeddate')) \
+    76                                                 .annotate(
+    77     37.0 MiB      0.0 MiB           2           Subtotal=Sum(F('unitprice') * F('quantity') * (1 - F('discount')),
+    78     37.0 MiB      0.0 MiB           1                        output_field=models.FloatField())). \
+    79     37.0 MiB      0.0 MiB           1           values('OrderID_id__shippeddate', 'OrderID_id__orderid', 'Subtotal', 'year'). \
+    80     37.0 MiB      0.0 MiB           1           order_by('ShippedDate')
+    81     37.1 MiB      0.0 MiB           1       print(orders.query)
+    82     37.1 MiB      0.0 MiB           1       print(orders)
+    83     37.1 MiB      0.0 MiB           1       return
+
+
+salesByYear execute time:  0:00:00.026794
+SELECT `products`.`ProductID`, `products`.`ProductName`, `products`.`SupplierID`, `products`.`CategoryID`, `products`.`QuantityPerUnit`, `products`.`UnitsInStock`, `products`.`UnitsOnOrder`, `products`.`ReorderLevel`, `products`.`Discontinued`, `categories`.`CategoryName` AS `CategoryName` FROM `categories` INNER JOIN `products` ON (`categories`.`ID` = `products`.`CategoryID`) WHERE `products`.`Discontinued` = 1 ORDER BY `products`.`ProductName` ASC
+<QuerySet [{'products__productid': 17, 'products__productname': 'Alice Mutton', 'products__supplierid': 7, 'products__categoryid': 6, 'products__quantityperunit': '20 - 1 kg tins', 'products__unitsinstock': 0, 'products__unitsonorder': 0, 'products__reorderlevel': 0, 'products__discontinued': 1, 'CategoryName': 'Meat/Poultry'}, {'products__productid': 5, 'products__productname': "Chef Anton's Gumbo Mix", 'products__supplierid': 2, 'products__categoryid': 2, 'products__quantityperunit': '36 boxes', 'products__unitsinstock': 0, 'products__unitsonorder': 0, 'products__reorderlevel': 0, 'products__discontinued': 1, 'CategoryName': 'Condiments'}, {'products__productid': 24, 'products__productname': 'Guaraná Fantástica', 'products__supplierid': 10, 'products__categoryid': 1, 'products__quantityperunit': '12 - 355 ml cans', 'products__unitsinstock': 20, 'products__unitsonorder': 0, 'products__reorderlevel': 0, 'products__discontinued': 1, 'CategoryName': 'Beverages'}, {'products__productid': 9, 'products__productname': 'Mishi Kobe Niku', 'products__supplierid': 4, 'products__categoryid': 6, 'products__quantityperunit': '18 - 500 g pkgs.', 'products__unitsinstock': 29, 'products__unitsonorder': 0, 'products__reorderlevel': 0, 'products__discontinued': 1, 'CategoryName': 'Meat/Poultry'}, {'products__productid': 53, 'products__productname': 'Perth Pasties', 'products__supplierid': 24, 'products__categoryid': 6, 'products__quantityperunit': '48 pieces', 'products__unitsinstock': 0, 'products__unitsonorder': 0, 'products__reorderlevel': 0, 'products__discontinued': 1, 'CategoryName': 'Meat/Poultry'}, {'products__productid': 28, 'products__productname': 'R?ssle Sauerkraut', 'products__supplierid': 12, 'products__categoryid': 7, 'products__quantityperunit': '25 - 825 g cans', 'products__unitsinstock': 26, 'products__unitsonorder': 0, 'products__reorderlevel': 0, 'products__discontinued': 1, 'CategoryName': 'Produce'}, {'products__productid': 42, 'products__productname': 'Singaporean Hokkien Fried Mee', 'products__supplierid': 20, 'products__categoryid': 5, 'products__quantityperunit': '32 - 1 kg pkgs.', 'products__unitsinstock': 26, 'products__unitsonorder': 0, 'products__reorderlevel': 0, 'products__discontinued': 1, 'CategoryName': 'Grains/Cereals'}, {'products__productid': 29, 'products__productname': 'Thüringer Rostbratwurst', 'products__supplierid': 12, 'products__categoryid': 6, 'products__quantityperunit': '50 bags x 30 sausgs.', 'products__unitsinstock': 0, 'products__unitsonorder': 0, 'products__reorderlevel': 0, 'products__discontinued': 1, 'CategoryName': 'Meat/Poultry'}]>
+Filename: /Users/kaiyuan.gan/Desktop/Sem3 - Course/CS5421 - Database/project/Django-ORM/main.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    86     37.1 MiB     37.1 MiB           1   @profile
+    87                                         def employeeSalesByCountry():
+    88                                             """
+    89                                             select distinct b.*, a.CategoryName
+    90                                             from Categories a
+    91                                             inner join Products b on a.CategoryID = b.CategoryID
+    92                                             where b.Discontinued = 'N'
+    93                                             order by b.ProductName;
+    94                                             :return:
+    95                                             """
+    96     37.1 MiB      0.0 MiB           1       categories = (
+    97     37.1 MiB      0.0 MiB           5           Categories.objects.filter(
+    98     37.1 MiB      0.0 MiB           1               products__discontinued=1
+    99                                                 )
+   100                                                 .annotate(
+   101     37.1 MiB      0.0 MiB           1               CategoryName=F('categoryname'),
+   102                                                 )
+   103                                                 .values(
+   104     37.1 MiB      0.0 MiB           1               'products__productid',
+   105     37.1 MiB      0.0 MiB           1               'products__productname',
+   106     37.1 MiB      0.0 MiB           1               'products__supplierid',
+   107     37.1 MiB      0.0 MiB           1               'products__categoryid',
+   108     37.1 MiB      0.0 MiB           1               'products__quantityperunit',
+   109     37.1 MiB      0.0 MiB           1               'products__unitsinstock',
+   110     37.1 MiB      0.0 MiB           1               'products__unitsonorder',
+   111     37.1 MiB      0.0 MiB           1               'products__reorderlevel',
+   112     37.1 MiB      0.0 MiB           1               'products__discontinued',
+   113     37.1 MiB      0.0 MiB           1               'CategoryName'
+   114                                                 )
+   115     37.1 MiB      0.0 MiB           1           .order_by('products__productname')
+   116                                             )
+   117
+   118     37.1 MiB      0.0 MiB           1       print(categories.query)
+   119     37.1 MiB      0.0 MiB           1       print(categories)
+
+
+employeeSalesByCountry execute time:  0:00:00.013287
+SELECT `products`.`ID`, `products`.`ProductName`, `categories`.`CategoryID`, `categories`.`CategoryName` FROM `products` INNER JOIN `categories` ON (`products`.`CategoryID` = `categories`.`ID`) WHERE `products`.`Discontinued` = 1 ORDER BY `products`.`ProductName` ASC
+<QuerySet [{'id': 17, 'productname': 'Alice Mutton', 'categoryid__categoryid': 6, 'categoryid__categoryname': 'Meat/Poultry'}, {'id': 5, 'productname': "Chef Anton's Gumbo Mix", 'categoryid__categoryid': 2, 'categoryid__categoryname': 'Condiments'}, {'id': 24, 'productname': 'Guaraná Fantástica', 'categoryid__categoryid': 1, 'categoryid__categoryname': 'Beverages'}, {'id': 9, 'productname': 'Mishi Kobe Niku', 'categoryid__categoryid': 6, 'categoryid__categoryname': 'Meat/Poultry'}, {'id': 53, 'productname': 'Perth Pasties', 'categoryid__categoryid': 6, 'categoryid__categoryname': 'Meat/Poultry'}, {'id': 28, 'productname': 'R?ssle Sauerkraut', 'categoryid__categoryid': 7, 'categoryid__categoryname': 'Produce'}, {'id': 42, 'productname': 'Singaporean Hokkien Fried Mee', 'categoryid__categoryid': 5, 'categoryid__categoryname': 'Grains/Cereals'}, {'id': 29, 'productname': 'Thüringer Rostbratwurst', 'categoryid__categoryid': 6, 'categoryid__categoryname': 'Meat/Poultry'}]>
+Filename: /Users/kaiyuan.gan/Desktop/Sem3 - Course/CS5421 - Database/project/Django-ORM/main.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+   122     37.1 MiB     37.1 MiB           1   @profile
+   123                                         def listOfProducts():
+   124                                             """
+   125                                             select distinct b.*, a.CategoryName
+   126                                             from Categories a
+   127                                             inner join Products b on a.CategoryID = b.CategoryID
+   128                                             where b.Discontinued = 1
+   129                                             order by b.ProductName;
+   130                                             :return:
+   131                                             """
+   132
+   133     37.1 MiB      0.0 MiB           4       categories = Products.objects.filter(discontinued=1) \
+   134     37.1 MiB      0.0 MiB           2           .select_related('categoryid').annotate().order_by('productname') \
+   135     37.1 MiB      0.0 MiB           1           .values('id', 'productname', 'categoryid__categoryid', 'categoryid__categoryname')
+   136     37.1 MiB      0.0 MiB           1       print(categories.query)
+   137     37.1 MiB      0.0 MiB           1       print(categories)
+
+
+listOfProducts execute time:  0:00:00.007553
+SELECT `products`.`ProductID`, `products`.`ProductName` FROM `products` WHERE `products`.`Discontinued` = 1 ORDER BY `products`.`ProductName` ASC
+8
+Filename: /Users/kaiyuan.gan/Desktop/Sem3 - Course/CS5421 - Database/project/Django-ORM/main.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+   140     37.1 MiB     37.1 MiB           1   @profile
+   141                                         def currentProductList():
+   142                                             """
+   143                                             select ProductID, ProductName
+   144                                             from products
+   145                                             where Discontinued = 1
+   146                                             order by ProductName;
+   147                                             :return:
+   148                                             """
+   149     37.1 MiB      0.0 MiB           1       products = (
+   150     37.1 MiB      0.0 MiB           4           Products.objects.filter(
+   151     37.1 MiB      0.0 MiB           1               discontinued=1
+   152                                                 )
+   153                                                 .values(
+   154     37.1 MiB      0.0 MiB           1               'productid',
+   155     37.1 MiB      0.0 MiB           1               'productname'
+   156                                                 )
+   157     37.1 MiB      0.0 MiB           1           .order_by('productname')
+   158                                             )
+   159     37.1 MiB      0.0 MiB           1       print(products.query)
+   160     37.2 MiB      0.1 MiB           1       print(len(products.values()))
+
+
+currentProductList execute time:  0:00:00.008972
+
+Process finished with exit code 0
