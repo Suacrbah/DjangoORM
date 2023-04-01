@@ -1,0 +1,9 @@
+sql-1: explain SELECT `orderdetails`.`ORDERID`, SUM(((`orderdetails`.`UnitPrice` * `orderdetails`.`Quantity`) * (1 - `orderdetails`.`Discount`))) AS `Subtotal` FROM `orderdetails` GROUP BY `orderdetails`.`ORDERID` ORDER BY `orderdetails`.`ORDERID` ASC
+
+sql-2: explain SELECT `orders`.`ShippedDate`, `orderdetails`.`ORDERID`, EXTRACT(YEAR FROM `orders`.`ShippedDate`) AS `year`, SUM(((`orderdetails`.`UnitPrice` * `orderdetails`.`Quantity`) * (1 - `orderdetails`.`Discount`))) AS `Subtotal` FROM `orderdetails` INNER JOIN `orders` ON (`orderdetails`.`ORDERID` = `orders`.`OrderID`) WHERE (`orders`.`ShippedDate` IS NOT NULL AND `orders`.`ShippedDate` BETWEEN 1996-12-24 00:00:00 AND 1997-09-30 00:00:00) GROUP BY `orderdetails`.`ID`, `orders`.`ShippedDate` ORDER BY DATE(`orders`.`ShippedDate`) ASC
+
+sql-3: explain SELECT `products`.`ProductID`, `products`.`ProductName`, `products`.`SupplierID`, `products`.`CategoryID`, `products`.`QuantityPerUnit`, `products`.`UnitsInStock`, `products`.`UnitsOnOrder`, `products`.`ReorderLevel`, `products`.`Discontinued`, `categories`.`CategoryName` AS `CategoryName` FROM `categories` INNER JOIN `products` ON (`categories`.`ID` = `products`.`CategoryID`) WHERE `products`.`Discontinued` = 1 ORDER BY `products`.`ProductName` ASC
+
+sql-4: explain SELECT `products`.`ID`, `products`.`ProductName`, `categories`.`CategoryID`, `categories`.`CategoryName` FROM `products` INNER JOIN `categories` ON (`products`.`CategoryID` = `categories`.`ID`) WHERE `products`.`Discontinued` = 1 ORDER BY `products`.`ProductName` ASC
+
+sql-5: explain SELECT `products`.`ProductID`, `products`.`ProductName` FROM `products` WHERE `products`.`Discontinued` = 1 ORDER BY `products`.`ProductName` ASC
