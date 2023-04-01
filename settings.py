@@ -9,9 +9,9 @@ INSTALLED_APPS = (
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'northwind2',
-        'USER': 'dbadmin',
-        'PASSWORD': '123456',
+        'NAME': 'tiktok_base',
+        'USER': 'root',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '3306',
     }
