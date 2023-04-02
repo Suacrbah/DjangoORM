@@ -7,13 +7,8 @@ these settings as is, and skip to START OF APPLICATION section below """
 # Turn off bytecode generation
 import sys
 
-from django.db import models
 from django.db.models.functions import ExtractYear, TruncDate
 from memory_profiler import profile
-
-from app.models import Products, Categories
-
-from app.models import OrderDetails as Orderdetails
 
 sys.dont_write_bytecode = True
 
@@ -26,8 +21,9 @@ import django
 django.setup()
 
 # Import your models for use in your script
-from db.models import *
+from app.models import *
 from django.db.models import Sum, F, Q
+import django.db.models as models
 
 
 ############################################################################
@@ -41,12 +37,12 @@ def orderSubTotals():
         order by OrderID;
         """
     subtotal_by_order = (
-        Orderdetails.objects
-        .values('OrderID')
+        OrderDetails.objects
+        .values('orderid')
         .annotate(
             Subtotal=Sum(F('unitprice') * F('quantity') * (1 - F('discount')), output_field=models.FloatField())
         )
-        .order_by('OrderID')
+        .order_by('orderid')
     )
     print(subtotal_by_order.query)
     print(subtotal_by_order)
@@ -72,16 +68,16 @@ def salesByYear():
     order by a.ShippedDate;
     :return:
     """
-    orders = Orderdetails.objects.select_related('OrderID_id').filter(
-        OrderID_id__shippeddate__isnull=False,
-        OrderID_id__shippeddate__range=['1996-12-24', '1997-09-30']
+    orders = OrderDetails.objects.select_related('OrderID_id').filter(
+        orderid_id__shippeddate__isnull=False,
+        orderid_id__shippeddate__range=['1996-12-24', '1997-09-30']
     ) \
-        .annotate(year=ExtractYear('OrderID_id__shippeddate')) \
-        .annotate(ShippedDate=TruncDate('OrderID_id__shippeddate')) \
+        .annotate(year=ExtractYear('orderid_id__shippeddate')) \
+        .annotate(ShippedDate=TruncDate('orderid_id__shippeddate')) \
         .annotate(
         Subtotal=Sum(F('unitprice') * F('quantity') * (1 - F('discount')),
                      output_field=models.FloatField())). \
-        values('OrderID_id__shippeddate', 'OrderID_id__orderid', 'Subtotal', 'year'). \
+        values('orderid_id__shippeddate', 'orderid_id__orderid', 'Subtotal', 'year'). \
         order_by('ShippedDate')
     print(orders.query)
     print(orders)
@@ -137,7 +133,7 @@ def listOfProducts():
 
     categories = Products.objects.filter(discontinued=1) \
         .select_related('categoryid').annotate().order_by('productname') \
-        .values('id', 'productname', 'categoryid__categoryid', 'categoryid__categoryname')
+        .values('productid', 'productname', 'categoryid__categoryid', 'categoryid__categoryname')
     print(categories.query)
     print(categories)
 
@@ -165,7 +161,7 @@ def currentProductList():
     print(len(products.values()))
 
 
-if __name__ == '__main__':
+def run():
     from datetime import datetime
 
     func_list = [orderSubTotals, salesByYear, employeeSalesByCountry, listOfProducts, currentProductList]
@@ -174,18 +170,7 @@ if __name__ == '__main__':
         func()
         execute_time = datetime.now() - start_time
         print(func.__name__, "execute time: ", execute_time)
-    # 1
-    # orderSubTotals()
 
-    # 2
 
-    # salesByYear()
-
-    # 3
-    # employeeSalesByCountry()
-
-    # 4
-    # listOfProducts()
-
-    # 5
-    currentProductList()
+if __name__ == '__main__':
+    run()

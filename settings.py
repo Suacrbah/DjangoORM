@@ -1,11 +1,9 @@
 import os
 
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-INSTALLED_APPS = (
-    'app', 
-)
-
+# DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -16,5 +14,21 @@ DATABASES = {
         'PORT': '3306',
     }
 }
-# CHANGE THE SECRET KEY IN YOUR CODE
-SECRET_KEY = '4cCI6MTYzOTQ0NzgwNiwiaWF0IjoxNjM5NDQ3ODA2fQ' 
+
+MIDDLEWARE = [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+]
+
+INSTALLED_APPS = ["app", "debug_toolbar"]
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "APP_DIRS": True,
+    }
+]
+
+DEBUG_TOOLBAR_CONFIG = {
+    # Django's test client sets wsgi.multiprocess to True inappropriately
+    "RENDER_PANELS": False
+}

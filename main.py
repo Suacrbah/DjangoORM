@@ -1,6 +1,6 @@
 from django.db.models import *
+from django.db.models.functions import ExtractYear, TruncDate
 
-from app.config import *
 from app.models import *
 
 
@@ -12,7 +12,7 @@ def orderSubTotals():
         order by OrderID;
         """
     subtotal_by_order = (
-        Orderdetails.objects
+        OrderDetails.objects
         .values('orderid')
         .annotate(
             Subtotal=Sum(F('unitprice') * F('quantity') * (1 - F('discount')), output_field=models.FloatField())
@@ -42,7 +42,7 @@ def salesByYear():
     order by a.ShippedDate;
     :return:
     """
-    orders = Orderdetails.objects.select_related('OrderID_id').filter(
+    orders = OrderDetails.objects.select_related('OrderID_id').filter(
         OrderID_id__shippeddate__isnull=False,
         OrderID_id__shippeddate__range=['1996-12-24', '1997-09-30']
     ) \
@@ -130,6 +130,7 @@ def currentProductList():
     )
     print(products.query)
     print(len(products.values()))
+
 
 def sql_function_6():
     # 6
